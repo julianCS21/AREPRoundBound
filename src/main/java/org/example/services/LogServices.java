@@ -7,14 +7,18 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LogServices {
 
     private static final String USER_AGENT = "Mozilla/5.0";
-    private static final String GET_URL = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=fb&apikey=Q1QZFVJQ21K7C6XM";
 
-    public static void main(String[] args) throws IOException, MalformedURLException, ProtocolException {
+    private  static int current_index = 0;
 
+    private static String[] backServices = {"http://logservices-1:6001/logs?log=","http://logservices-2:6001/logs?log=","http://logservices-3:6001/logs?log="};
+    public static List<String> getLogs(String message) throws IOException, MalformedURLException, ProtocolException {
+        String GET_URL = roundRobin() + message;
         URL obj = new URL(GET_URL);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
@@ -28,20 +32,38 @@ public class LogServices {
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     con.getInputStream()));
             String inputLine;
-            StringBuffer response = new StringBuffer();
+            List<String> response = new ArrayList<>();
 
             while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
+                response.add(inputLine);
             }
             in.close();
 
             // print result
             System.out.println(response.toString());
+            System.out.println("GET DONE");
+            return response;
+
         } else {
             System.out.println("GET request not worked");
         }
-        System.out.println("GET DONE");
+
+        return null;
     }
+
+
+    private static String roundRobin(){
+        current_index = (current_index + 1) % backServices.length;
+        System.out.println( "Server : "  + backServices[current_index]);
+        return backServices[current_index];
+
+
+    }
+
+
+
+
+
 
 }
 

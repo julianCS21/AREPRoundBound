@@ -1,8 +1,7 @@
-package org.example; /**
- * Hello world!
- *
- */
+package org.example.server;
 
+
+import org.example.services.LogServices;
 
 import static spark.Spark.*;
 
@@ -13,7 +12,10 @@ public class SparkWebServer {
     public static void main(String... args){
         port(getPort());
         staticFiles.location("/public");
-        get("/roundboundalg", (req,res) -> "not supported yet");
+        get("/roundrobin", (req,res) -> {
+            String log = req.queryParams("log");
+            return LogServices.getLogs(log);
+        });
     }
 
     private static int getPort() {
